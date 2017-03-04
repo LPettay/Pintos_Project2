@@ -7,6 +7,7 @@
 static void syscall_handler (struct intr_frame *);
 
 /* Collin Vossman - Project 2 */
+
 void
 syscall_init (void) 
 {
