@@ -42,6 +42,8 @@ syscall_handler (struct intr_frame *f UNUSED)
     case SYS_OPEN:
       break;
     case SYS_FILESIZE:
+      get_args(f, args, 3);
+      f->eax = sys_filesize(args[0]);
       break;
     case SYS_READ:
       break;
@@ -122,7 +124,19 @@ sys_open(const char *file)
 int
 sys_filesize(int fd)
 {
+  int file_size;
+  struct process_file* pfile;
+  
+  // Get process file.
+  pfile = get_process_file(fd);
 
+  // Check if file is NULL
+  if (pf == NULL) return -1;
+  
+  // Check if file is NULL
+  if (pf->file == NULL) return -1;
+  
+  return file_length(pfile->file);
 }
 
 int
