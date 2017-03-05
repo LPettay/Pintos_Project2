@@ -3,6 +3,7 @@
 #include <syscall-nr.h>
 #include "threads/interrupt.h"
 #include "threads/thread.h"
+#include "threads/init.h"
 
 static void syscall_handler (struct intr_frame *);
 
@@ -66,7 +67,7 @@ syscall_handler (struct intr_frame *f UNUSED)
 void
 syscall_halt(void)
 {
-
+  shutdown_power_off();
 }
 
 
