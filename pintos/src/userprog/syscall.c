@@ -31,6 +31,8 @@ syscall_handler (struct intr_frame *f UNUSED)
       get_args(f, args, 1);
       sys_exit(args[0]);
       break;
+    case SYS_EXEC:
+      break;
     case SYS_WAIT:
       break;
     case SYS_CREATE:
@@ -57,6 +59,14 @@ syscall_handler (struct intr_frame *f UNUSED)
 }
 
 /* Collin Vossman - Project 2 */
+
+
+void
+syscall_halt(void)
+{
+
+}
+
 
 /* Exit current process */
 void
@@ -89,4 +99,79 @@ int
 sys_wait(pid_t pid)
 {
   
+}
+
+bool
+sys_create(const char *file, unsigned initial_size)
+{
+
+}
+
+bool
+sys_remove(const char *file)
+{
+
+}
+
+int
+sys_open(const char *file)
+{
+
+}
+
+int
+sys_filesize(int fd)
+{
+
+}
+
+int
+sys_read(int fd, void *buffer, unsigned size)
+{
+
+}
+
+int
+sys_write(int fd, const void *buffer, unsigned size)
+{
+  
+}
+
+void 
+sys_seek(int fd, unsigned position)
+{
+
+}
+
+unsigned
+sys_tell(int fd)
+{
+
+}
+
+void
+sys_close(int fd)
+{
+
+}
+
+
+/* Get arguments from the stack.
+   f    - The structure to hold the stack pointer and registers.
+   args - The array of arguments that we are filling with the
+   	  arguments from the stack.
+   n    - Number of arguments to read in.
+ */
+
+static void get_args(struct intr_frame *f, int* args, int n)
+{
+  int * stack_args = f->esp + sizeof(int);
+  for (int i = 0; i < n; i++)
+  {
+    if (!is_user_vaddr((const void *)stack_args))
+    {
+      sys_exit(-1);
+    }
+    args[i] = stack_args[i];
+  }
 }
