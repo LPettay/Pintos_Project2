@@ -99,6 +99,7 @@ struct thread
     struct thread *parent;              /* marks the Parent thread */
     struct list_elem *kiddo;            /* marks the child thread */
     struct list *kids;                  /* marks all the rugrats */
+    bool waiting;                       /* marks whether already waiting on this thread or not */
 #endif
 
     /* Owned by thread.c. */
