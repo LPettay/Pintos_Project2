@@ -236,6 +236,29 @@ static void get_args(struct intr_frame *f, int* args, int n)
 
 static struct process_file* get_process_file(int file_descriptor) 
 {
+  /* Acquire file system lock                               */
+  lock_acquire(&file_sys_lock);
 
+  /* Get current thread                                     */
+  struct thread* cur = thread_current();
+  struct list_elem* cur_elem;
+
+  /* Iterate over file list of the current thread           */
+  for(cur_elem = list_begin(&cur->file_list);
+      cur_elem != list_end(&cur->file_list);
+      cur_elem = list_next(cur_elem))
+  {
+    /* Get the process file which holds the current element */
+    struct process_file *pf = list_entry(cur_elem, struct process_file, elem);
+    if(pf != NULL && file_descriptor == pf->file_descriptor)
+      {
+        /* Return the file pointer if descriptors match     */
+        lock_release(&file_sys_lock);
+        return pf;  
+      }
+  }
+  /* Return NULL if the file does not exist                 */  
+  lock_release(&file_sys_lock);
+  return NULL;
 }
 
