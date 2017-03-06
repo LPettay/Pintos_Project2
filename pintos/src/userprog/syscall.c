@@ -18,7 +18,7 @@ syscall_init (void)
 static void
 syscall_handler (struct intr_frame *f UNUSED) 
 {
-  int args[3];
+  int args[3]; // Since max args passed into any call is 3.
 
   // Gets the number for the system call.  Check lib/syscallnr.h for numbers.
   int syscall_no = *(int *)create_kernel_ptr(f->esp);
@@ -28,33 +28,53 @@ syscall_handler (struct intr_frame *f UNUSED)
     case SYS_HALT:
       syscall_halt();
       break;
-    case SYS_EXIT: // Check
+    case SYS_EXIT:
       get_args(f, args, 1);
       sys_exit(args[0]);
       break;
     case SYS_EXEC:
+      get_args(f, args, 1);
+      f->eax = sys_exec((const char *)args[0]);
       break;
     case SYS_WAIT:
+      get_args(f, args, 1);
+      f->eax = sys_wait(args[0]);
       break;
     case SYS_CREATE:
+      get_args(f, args, 2);
+      f->eax = sys_create((const char *)args[0], (unsigned)args[1]);
       break;
     case SYS_REMOVE:
+      get_args(f, args, 1);
+      f->eax = sys_remove((const char *)args[0]);
       break
     case SYS_OPEN:
+      get_args(f, &args[0], 1);
+      f->eax = sys_open((const char *)args[0]);
       break;
     case SYS_FILESIZE:
       get_args(f, args, 3);
       f->eax = sys_filesize(args[0]);
       break;
     case SYS_READ:
+      get_args(f, args, 3);
+      f->eax = sys_read(args[0], (void *)args[1], (unsigned)args[2]);
       break;
     case SYS_WRITE:
+      get_args(f, args, 3);
+      f->eax = sys_write(args[0], (const void *)args[1], (unsigned)args[2]);
       break;
     case SYS_SEEK:
+      get_args(f, args, 2);
+      sys_seek(args[0], args[1]);
       break;
     case SYS_TELL:
+      get_args(f, args, 1);
+      f->eax = sys_tell(args[0]);
       break;
     case SYS_CLOSE:
+      get_args(f, args, 1);
+      sys_close(args[0]);
       break;
     default:
       sys_exit(-1);
@@ -155,13 +175,42 @@ sys_write(int fd, const void *buffer, unsigned size)
 void 
 sys_seek(int fd, unsigned position)
 {
+  // Get the corresponding process file
+  struct process_file* pf;
+  if((pf = get_process_file(fd)) == NULL) return;
 
+  // Validate file*
+  lock_acquire(&(pf->file_lock));
+  if(pf->file == NULL)
+  {
+    lock_release(&(pf->file_lock));
+    return;
+  }
+
+  // SEEK
+  file_seek(pf->file, position);
+  lock_release(&(pf->file_lock));
 }
 
 unsigned
 sys_tell(int fd)
 {
+  // Get the corresponding process file
+  struct process_file* pf;
+  if((pf = get_process_file(fd)) == NULL) return(-1); // Check get_process_file
 
+  // LOCK while checking if valid file.
+  lock_acquire(&pf->file_lock);
+  if(pf->file == NULL)
+  {
+    lock_release(&(pf->file_lock));
+    return -1;
+  }
+  
+  // TELL
+  off_t pos = file_tell(pf->file);
+  lock_release(&pf->file_lock);
+  return pos;
 }
 
 void
@@ -170,14 +219,14 @@ sys_close(int fd)
 
 }
 
+/* EXTRA FUNCTIONS */
 
 /* Get arguments from the stack.
    f    - The structure to hold the stack pointer and registers.
    args - The array of arguments that we are filling with the
    	  arguments from the stack.
    n    - Number of arguments to read in.
- */
-
+*/
 static void get_args(struct intr_frame *f, int* args, int n)
 {
   int * stack_args = f->esp + sizeof(int);
@@ -190,3 +239,9 @@ static void get_args(struct intr_frame *f, int* args, int n)
     args[i] = stack_args[i];
   }
 }
+
+static struct process_file* get_process_file(int file_descriptor) 
+{
+
+}
+
