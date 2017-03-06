@@ -183,6 +183,23 @@ thread_create (const char *name, int priority,
   /* Initialize thread. */
   init_thread (t, name, priority);
   tid = t->tid = allocate_tid ();
+   
+  /*AJ MASSEY - The next several lines are used to create and store kids onto a parent's list. */
+  struct thread *child;
+  struct list_elem *e;
+  for (e = list_begin (&all_list); e != list_end (&all_list);
+       e = list_next (e))
+  {
+      struct thread *t = list_entry (e, struct thread, allelem);
+      if( t -> tid == id) 
+      {
+         child = t;  
+      }
+  }
+  child -> parent = parent;
+  list_push_back (&parent -> kids, &child->kiddo);
+}
+   /*END OF AJ'S EDITS */
 
   /* Prepare thread for first run by initializing its stack.
      Do this atomically so intermediate values for the 'stack' 

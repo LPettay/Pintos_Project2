@@ -117,12 +117,47 @@ start_process (void *file_name_)
    been successfully called for the given TID, returns -1
    immediately, without waiting.
 
-   This function will be implemented in problem 2-2.  For now, it
-   does nothing. */
+   AJ MASSEY - Below is my implementation of how process_wait should work based on the description
+   provided in the Project2.pdf. Inspiration for this provided by Mr. Lucas Severyn's Github.*/
 int
 process_wait (tid_t child_tid UNUSED) 
 {
-  return -1;
+   struct thread *parent = thread_current();
+   struct thread *child;
+   struct list_elem *a;
+   
+   for (e = list_begin (&parent->kids); e != list_end (&parent->kids);
+       e = list_next (e))
+    {
+      child = list_entry (e, struct thread, child);
+      if(child->tid == child_tid) break;
+    }
+   if (child != NULL)
+   {
+      if (child->tid == child_tid)
+      {
+           if (child->waiting)
+           {
+               return -1;  
+           }
+      }
+      else
+      {
+         return -1;
+      }
+   }
+   else
+   {
+      return -1;  
+   }
+   
+   if (child->status != THREAD_DYING || child->exit_status != NULL) 
+   {
+      return child->exit_status;
+   }
+   
+   int exit_status = -1;
+   return exit_status;
 }
 
 /* Free the current process's resources. */
