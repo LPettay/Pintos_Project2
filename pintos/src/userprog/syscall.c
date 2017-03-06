@@ -179,7 +179,7 @@ sys_seek(int fd, unsigned position)
   struct process_file* pf;
   if((pf = get_process_file(fd)) == NULL) return;
 
-  // Validate file*
+  // LOCK while we check if file is valid.
   lock_acquire(&(pf->file_lock));
   if(pf->file == NULL)
   {
