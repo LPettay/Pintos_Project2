@@ -101,7 +101,7 @@ sys_exec(const char *cmd_line)
 int
 sys_wait(pid_t pid)
 {
-  
+  process_wait(pid);
 }
 
 bool
