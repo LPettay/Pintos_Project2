@@ -18,14 +18,12 @@ struct process_file
   struct list_elem elem;
 }
 
-void
-syscall_init (void) 
+void syscall_init (void) 
 {
   intr_register_int (0x30, 3, INTR_ON, syscall_handler, "syscall");
 }
 
-static void
-syscall_handler (struct intr_frame *f UNUSED) 
+static void syscall_handler (struct intr_frame *f UNUSED) 
 {
   int args[3]; // Since max args passed into any call is 3.
 
@@ -93,16 +91,14 @@ syscall_handler (struct intr_frame *f UNUSED)
 /* Collin Vossman - Project 2 */
 
 
-void
-syscall_halt(void)
+void syscall_halt(void)
 {
   shutdown_power_off();
 }
 
 
 /* Exit current process */
-void
-sys_exit(int status)
+void sys_exit(int status)
 {
   // Saves exit status to the current thread.
   struct thread * cur = thread_current();
@@ -115,8 +111,7 @@ sys_exit(int status)
   thread_exit();
 }
 
-pid_t
-sys_exec(const char *cmd_line)
+pid_t sys_exec(const char *cmd_line)
 {
   // Converts cmd_line to a kernel pointer.
   cmd_line = create_kernel_ptr(cmd_line);
@@ -127,32 +122,27 @@ sys_exec(const char *cmd_line)
   return thread_wait_for_load(pid) ? pid : -1; // Double check this statement.
 }
 
-int
-sys_wait(pid_t pid)
+int sys_wait(pid_t pid)
 {
   process_wait(pid);
 }
 
-bool
-sys_create(const char *file, unsigned initial_size)
+bool sys_create(const char *file, unsigned initial_size)
+{
+  return filesys_create(file, initial_size);
+}
+
+bool sys_remove(const char *file)
+{
+  return filesys_remove(file);
+}
+
+int sys_open(const char *file)
 {
 
 }
 
-bool
-sys_remove(const char *file)
-{
-
-}
-
-int
-sys_open(const char *file)
-{
-
-}
-
-int
-sys_filesize(int fd)
+int sys_filesize(int fd)
 {
   int file_size;
   struct process_file* pfile;
@@ -169,20 +159,17 @@ sys_filesize(int fd)
   return file_length(pfile->file);
 }
 
-int
-sys_read(int fd, void *buffer, unsigned size)
+int sys_read(int fd, void *buffer, unsigned size)
 {
-
+  return file_read(fd, buffer, size);
 }
 
-int
-sys_write(int fd, const void *buffer, unsigned size)
+int sys_write(int fd, const void *buffer, unsigned size)
 {
   
 }
 
-void 
-sys_seek(int fd, unsigned position)
+void sys_seek(int fd, unsigned position)
 {
   // Get the corresponding process file
   struct process_file* pf;
@@ -201,8 +188,7 @@ sys_seek(int fd, unsigned position)
   lock_release(&(pf->file_lock));
 }
 
-unsigned
-sys_tell(int fd)
+unsigned sys_tell(int fd)
 {
   // Get the corresponding process file
   struct process_file* pf;
@@ -222,8 +208,7 @@ sys_tell(int fd)
   return pos;
 }
 
-void
-sys_close(int fd)
+void sys_close(int fd)
 {
 
 }
