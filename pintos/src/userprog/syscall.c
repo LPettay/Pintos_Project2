@@ -10,6 +10,14 @@ static void syscall_handler (struct intr_frame *);
 
 /* Collin Vossman - Project 2 */
 
+struct process_file 
+{
+  struct file* filename;
+  struct lock file_lock;
+  int file_descriptor;
+  struct list_elem elem;
+}
+
 void
 syscall_init (void) 
 {
