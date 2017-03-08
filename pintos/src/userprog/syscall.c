@@ -172,39 +172,39 @@ int sys_write(int fd, const void *buffer, unsigned size)
 void sys_seek(int fd, unsigned position)
 {
   // Get the corresponding process file
-  struct process_file* pf;
-  if((pf = get_process_file(fd)) == NULL) return;
+  struct process_file* pfile;
+  if((pfile = get_process_file(fd)) == NULL) return;
 
   // LOCK while we check if file is valid.
-  lock_acquire(&(pf->file_lock));
-  if(pf->file == NULL)
+  lock_acquire(&(pfile->file_lock));
+  if(pfile->file == NULL)
   {
-    lock_release(&(pf->file_lock));
+    lock_release(&(pfile->file_lock));
     return;
   }
 
   // SEEK
-  file_seek(pf->file, position);
-  lock_release(&(pf->file_lock));
+  file_seek(pfile->file, position);
+  lock_release(&(pfile->file_lock));
 }
 
 unsigned sys_tell(int fd)
 {
   // Get the corresponding process file
-  struct process_file* pf;
-  if((pf = get_process_file(fd)) == NULL) return(-1); // Check get_process_file
+  struct process_file* pfile;
+  if((pfile = get_process_file(fd)) == NULL) return(-1); // Check get_process_file
 
   // LOCK while checking if valid file.
-  lock_acquire(&pf->file_lock);
-  if(pf->file == NULL)
+  lock_acquire(&pfile->file_lock);
+  if(pfile->file == NULL)
   {
-    lock_release(&(pf->file_lock));
+    lock_release(&(pfile->file_lock));
     return -1;
   }
   
   // TELL
-  off_t pos = file_tell(pf->file);
-  lock_release(&pf->file_lock);
+  off_t pos = file_tell(pfile->file);
+  lock_release(&pfile->file_lock);
   return pos;
 }
 
@@ -249,12 +249,12 @@ static struct process_file* get_process_file(int file_descriptor)
       cur_elem = list_next(cur_elem))
   {
     /* Get the process file which holds the current element */
-    struct process_file *pf = list_entry(cur_elem, struct process_file, elem);
-    if(pf != NULL && file_descriptor == pf->file_descriptor)
+    struct process_file *pfile = list_entry(cur_elem, struct process_file, elem);
+    if(pfile != NULL && file_descriptor == pfile->file_descriptor)
       {
         /* Return the file pointer if descriptors match     */
         lock_release(&file_sys_lock);
-        return pf;  
+        return pfile;  
       }
   }
   /* Return NULL if the file does not exist                 */  
