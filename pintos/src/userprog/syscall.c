@@ -151,10 +151,10 @@ int sys_filesize(int fd)
   pfile = get_process_file(fd);
 
   // Check if file is NULL
-  if (pf == NULL) return -1;
+  if (pfile == NULL) return -1;
   
   // Check if file is NULL
-  if (pf->file == NULL) return -1;
+  if (pfile->file == NULL) return -1;
   
   return file_length(pfile->file);
 }
