@@ -167,18 +167,49 @@ int sys_filesize(int fd)
 
 int sys_read(int fd, void *buffer, unsigned size)
 {
+  if(fd == 0)
+  {
+    input_getc(stdin);
+  }
   struct process_file* pf;
   pf = get_process_file(fd);
   
   struct off_t result;
   result = file_read(pf->filename, buffer, size);
   
-  return (int)result;
+  if(result => 0)
+  {
+    return (int)result;
+  }
+  else
+  {
+    return -1;
+  }
 }
 
 int sys_write(int fd, const void *buffer, unsigned size)
 {
+  if(fd == 1)
+  {
+    if(size <= 300)
+    {
+      putbuf(buffer, size); 
+    }
+    else
+    {
+       unsigned size2 = size - 300;
+       putbuf(buffer, size);
+       putbuf(buffer, size2);
+    }
+  }
   
+  struct process_file* pf;
+  pf = get_process_file(fd);
+  
+  struct off_t result;
+  result = file_write(pf->filename, buffer, size);
+  
+  return (int)result;
 }
 
 void sys_seek(int fd, unsigned position)
