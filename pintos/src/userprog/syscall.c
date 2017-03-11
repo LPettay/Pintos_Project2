@@ -139,12 +139,18 @@ bool sys_remove(const char *file)
 
 int sys_open(const char *file)
 {
-
+  int fd = 1;
+  struct file temp = filesys_open(file);
+  if(temp != NULL)
+  {
+    fd++;
+    return fd;
+  }
+  return -1;
 }
 
 int sys_filesize(int fd)
 {
-  int file_size;
   struct process_file* pfile;
   
   // Get process file.
@@ -154,14 +160,20 @@ int sys_filesize(int fd)
   if (pfile == NULL) return -1;
   
   // Check if file is NULL
-  if (pfile->file == NULL) return -1;
+  if (pfile->filename == NULL) return -1;
   
-  return file_length(pfile->file);
+  return file_length(pfile->filename);
 }
 
 int sys_read(int fd, void *buffer, unsigned size)
 {
-  return file_read(fd, buffer, size);
+  struct process_file* pf;
+  pf = get_process_file(fd);
+  
+  struct off_t result;
+  result = file_read(pf->filename, buffer, size);
+  
+  return (int)result;
 }
 
 int sys_write(int fd, const void *buffer, unsigned size)
@@ -177,14 +189,14 @@ void sys_seek(int fd, unsigned position)
 
   // LOCK while we check if file is valid.
   lock_acquire(&(pfile->file_lock));
-  if(pfile->file == NULL)
+  if(pfile->filename == NULL)
   {
     lock_release(&(pfile->file_lock));
     return;
   }
 
   // SEEK
-  file_seek(pfile->file, position);
+  file_seek(pfile->filename, position);
   lock_release(&(pfile->file_lock));
 }
 
@@ -196,21 +208,25 @@ unsigned sys_tell(int fd)
 
   // LOCK while checking if valid file.
   lock_acquire(&pfile->file_lock);
-  if(pfile->file == NULL)
+  if(pfile->filename == NULL)
   {
     lock_release(&(pfile->file_lock));
     return -1;
   }
   
   // TELL
-  off_t pos = file_tell(pfile->file);
+  off_t pos = file_tell(pfile->filename);
   lock_release(&pfile->file_lock);
   return pos;
 }
 
 void sys_close(int fd)
 {
-
+  struct process_file* pf;
+  
+  pf = get_process_file(fd);
+  
+  file_close(pf->filename);
 }
 
 /* EXTRA FUNCTIONS */
