@@ -30,7 +30,7 @@ struct process_file
 
 typedef int pid_t;
 // Explicit Function Declarations.
-void sys_halt(void);
+void syscall_halt(void);
 pid_t sys_exec(const char* cmd_line);
 int sys_wait(pid_t pid);
 bool sys_create(const char* file, unsigned initial_size);
@@ -183,7 +183,7 @@ int sys_open(const char *file)
   {
     pf = malloc(sizeof(struct process_file));
     pf->filename = temp;
-    pf->file_descriptor = current->fd++;
+    pf->file_descriptor = (int)current->fd++;
     list_push_back(&current->file_list, &pf->elem);
     return fd; 
   }
@@ -209,7 +209,7 @@ int sys_read(int fd, void *buffer, unsigned size)
   {
     input_getc();
   }
-  struct process_file* pf;
+  struct process_file * pf;
   if (pf = get_process_file(fd) == NULL) return -1;
   
   int result;
