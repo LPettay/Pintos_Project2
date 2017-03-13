@@ -35,7 +35,9 @@ void sys_seek(int fd, unsigned position);
 unsigned sys_tell(int fd);
 void sys_close(int fd);
 
+static void * create_kernel_ptr(const void* ptr);
 static void get_args(struct intr_frame *f, int* args, int n);
+static bool is_valid_ptr(const void* ptr);
 
 void syscall_init (void) 
 {
@@ -322,3 +324,19 @@ static struct process_file* get_process_file(int file_descriptor)
   return NULL;
 }
 
+static void * create_kernel_ptr(const void* ptr)
+{
+  // Return variable
+  void * kptr;
+
+  // Exit immediately if user is accessing protected memory
+  if (!is_valid_ptr(ptr) || ((kptr = pagedir_get_page(thread_current()->pagedir, ptr)) == NULL))
+    sys_exit(-1);
+
+  return kptr;
+}
+
+static bool is_valid_ptr(const void* ptr)
+{
+  return(is_user_vaddr(ptr) && (ptr >= EXECUTABLE_START));
+}
