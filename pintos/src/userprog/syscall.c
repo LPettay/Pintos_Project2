@@ -195,8 +195,10 @@ int sys_filesize(int fd)
   
   // Get process file.
   pfile = get_process_file(fd);
-  if (pfile == NULL) return -1;
-  
+  if (pfile == NULL)
+  {
+    return -1;
+  }
   // Check if file is NULL
   if (pfile->filename == NULL) return -1;
   
@@ -210,8 +212,11 @@ int sys_read(int fd, void *buffer, unsigned size)
     input_getc();
   }
   struct process_file * pf;
-  if (pf = get_process_file(fd) == NULL) return -1;
-  
+  pf = get_process_file(fd);
+  if (pf == NULL)
+  {
+    return -1;
+  }
   int result;
   result = file_read(pf->filename, buffer, size);
   
@@ -235,15 +240,18 @@ int sys_write(int fd, const void *buffer, unsigned size)
     }
     else
     {
-        unsigned size2 = size - 300;
+       unsigned size2 = size - 300;
        putbuf(buffer, size);
        putbuf(buffer, size2);
     }
   }
   
   struct process_file* pf;
-  if (pf = get_process_file(fd) == NULL) return - 1;
-  
+  pf = get_process_file(fd);
+  if (pf == NULL)
+  {
+    return - 1;
+  }
   int result;
   result = file_write(pf->filename, buffer, size);
   
@@ -254,8 +262,11 @@ void sys_seek(int fd, unsigned position)
 {
   // Get the corresponding process file
   struct process_file* pfile;
-  if((pfile = get_process_file(fd)) == NULL) return;
-
+  pfile = get_process_file(fd);
+  if(pfile == NULL)
+  {
+    return;
+  }
   // LOCK while we check if file is valid.
   if(pfile->filename == NULL)
   {
@@ -270,8 +281,11 @@ unsigned sys_tell(int fd)
 {
   // Get the corresponding process file
   struct process_file* pfile;
-  if((pfile = get_process_file(fd)) == NULL) return(-1); // Check get_process_file
-
+  pfile = get_process_file(fd);
+  if((pfile == NULL)
+  {
+       return -1; // Check get_process_file
+  }
   // LOCK while checking if valid file.
   if(pfile->filename == NULL)
   {
@@ -286,9 +300,11 @@ unsigned sys_tell(int fd)
 void sys_close(int fd)
 {
   struct process_file* pf;
-  
-  if (pf = get_process_file(fd) == NULL) return;
-  
+  pf = get_process_file(fd);
+  if (pf == NULL)
+  {
+    return;
+  }
   file_close(pf->filename);
 }
 
