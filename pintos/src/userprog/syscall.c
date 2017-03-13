@@ -191,10 +191,11 @@ int sys_open(const char *file)
 
 int sys_filesize(int fd)
 {
-  struct process_file* pfile;
+  struct process_file * pfile;
   
   // Get process file.
-  if (pfile = get_process_file(fd) == NULL) return -1;
+  pfile = get_process_file(fd);
+  if (pfile == NULL) return -1;
   
   // Check if file is NULL
   if (pfile->filename == NULL) return -1;
