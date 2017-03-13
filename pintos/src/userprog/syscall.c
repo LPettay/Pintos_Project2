@@ -170,6 +170,8 @@ int sys_open(const char *file)
 {
   int fd = 1;
   struct file *temp;
+  struct thread *current = thread_current();
+  struct process_file *pf;
   temp = filesys_open(file);
   if(temp == NULL)
   {
@@ -177,7 +179,10 @@ int sys_open(const char *file)
   }
   else
   {
-    fd++;
+    pf = malloc(sizeof(struct process_file));
+    pf->file = temp;
+    pf->file_descriptor = cur->fd++;
+    list_push_back(&cur->file_list, &pf->elem);
     return fd; 
   }
 }
