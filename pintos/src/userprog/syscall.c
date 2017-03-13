@@ -13,7 +13,6 @@ static void syscall_handler (struct intr_frame *);
 struct process_file 
 {
   struct file* filename;
-  struct lock file_lock;
   int file_descriptor;
   struct list_elem elem;
 };
@@ -219,16 +218,13 @@ void sys_seek(int fd, unsigned position)
   if((pfile = get_process_file(fd)) == NULL) return;
 
   // LOCK while we check if file is valid.
-  lock_acquire(&(pfile->file_lock));
   if(pfile->filename == NULL)
   {
-    lock_release(&(pfile->file_lock));
     return;
   }
 
   // SEEK
   file_seek(pfile->filename, position);
-  lock_release(&(pfile->file_lock));
 }
 
 unsigned sys_tell(int fd)
@@ -238,16 +234,13 @@ unsigned sys_tell(int fd)
   if((pfile = get_process_file(fd)) == NULL) return(-1); // Check get_process_file
 
   // LOCK while checking if valid file.
-  lock_acquire(&pfile->file_lock);
   if(pfile->filename == NULL)
   {
-    lock_release(&(pfile->file_lock));
     return -1;
   }
   
   // TELL
   off_t pos = file_tell(pfile->filename);
-  lock_release(&pfile->file_lock);
   return pos;
 }
 
