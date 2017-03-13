@@ -282,7 +282,7 @@ unsigned sys_tell(int fd)
   // Get the corresponding process file
   struct process_file* pfile;
   pfile = get_process_file(fd);
-  if((pfile == NULL)
+  if(pfile == NULL)
   {
        return -1; // Check get_process_file
   }
