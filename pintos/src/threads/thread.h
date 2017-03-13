@@ -89,6 +89,9 @@ struct thread
     uint8_t *stack;                     /* Saved stack pointer. */
     int priority;                       /* Priority. */
     struct list_elem allelem;           /* List element for all threads list. */
+    struct list_elem *kiddo;            /* marks the child thread */
+    struct thread *parent;              /* marks the Parent thread */
+    struct list *kids;                  /* marks all the rugrats */
 
     /* Shared between thread.c and synch.c. */
     struct list_elem elem;              /* List element. */
@@ -98,7 +101,6 @@ struct thread
     uint32_t *pagedir;                  /* Page directory. */
     int exit_status;                    /* Holds the exit status of thread */
     struct thread *parent;              /* marks the Parent thread */
-    struct list_elem *kiddo;            /* marks the child thread */
     struct list *kids;                  /* marks all the rugrats */
     bool waiting;                       /* marks whether already waiting on this thread or not */
 #endif
