@@ -200,7 +200,7 @@ thread_create (const char *name, int priority,
   }
 
   child -> parent_thread = parent;
-  list_push_back (&parent -> list_of_kids, &child->kiddo);
+  list_push_back (parent -> list_of_kids, child->kiddo);
 
    /*END OF AJ'S EDITS */
 

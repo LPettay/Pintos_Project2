@@ -126,7 +126,7 @@ process_wait (tid_t child_tid UNUSED)
    struct thread *child;
    struct list_elem *e;
    
-   for (e = list_begin (&parent->kids); e != list_end (&parent->kids);
+   for (e = list_begin (parent->kids); e != list_end (parent->kids);
        e = list_next (e))
     {
       child = list_entry (e, struct thread, child);
