@@ -93,6 +93,7 @@ struct thread
     struct thread *parent_thread;       /* marks the Parent thread */
     struct list *list_of_kids;          /* marks all the rugrats */
     struct list file_list;              /*List of files in use by thread */
+    int *fd;                            /*The File Directory number for this file */
 
     /* Shared between thread.c and synch.c. */
     struct list_elem elem;              /* List element. */
