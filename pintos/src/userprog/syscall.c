@@ -9,8 +9,12 @@
 #include "filesys/file.h"
 #include "filesys/file.c"
 #include "filesys/filesys.h"
+#include "filesys/off_t.h"
+#include "threads/synch.h"
 
 static void syscall_handler (struct intr_frame *);
+
+#define EXECUTABLE_START (void *)0x08048000
 
 /* Collin Vossman - Project 2 */
 
@@ -44,7 +48,7 @@ static bool is_valid_ptr(const void* ptr);
 
 void syscall_init (void) 
 {
-  lock_init(&file_sys_lock)
+  lock_init(&file_sys_lock);
   intr_register_int (0x30, 3, INTR_ON, syscall_handler, "syscall");
 }
 
@@ -165,14 +169,17 @@ bool sys_remove(const char *file)
 int sys_open(const char *file)
 {
   int fd = 1;
-  struct file temp;
+  struct file *temp;
   temp = filesys_open(file);
-  if(temp != NULL)
+  if(temp == NULL)
+  {
+    return -1;
+  }
+  else
   {
     fd++;
-    return fd;
+    return fd; 
   }
-  return -1;
 }
 
 int sys_filesize(int fd)
@@ -301,7 +308,7 @@ static void get_args(struct intr_frame *f, int* args, int n)
   }
 }
 
-static struct process_file* get_process_file(int file_descriptor) 
+static struct process_file get_process_file(int file_descriptor) 
 {
   /* Acquire file system lock                               */
   lock_acquire(&file_sys_lock);
