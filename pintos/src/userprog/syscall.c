@@ -45,6 +45,7 @@ void sys_close(int fd);
 
 static void * create_kernel_ptr(const void* ptr);
 static void get_args(struct intr_frame *f, int* args, int n);
+static struct process_file* get_process_file(int file_descriptor);
 static bool is_valid_ptr(const void* ptr);
 
 void syscall_init (void) 
@@ -190,10 +191,11 @@ int sys_open(const char *file)
 
 int sys_filesize(int fd)
 {
-  struct process_file* pfile;
+  struct process_file * pfile;
   
   // Get process file.
-  if (pfile = get_process_file(fd) == NULL) return -1;
+  pfile = get_process_file(fd);
+  if (pfile == NULL) return -1;
   
   // Check if file is NULL
   if (pfile->filename == NULL) return -1;
@@ -311,7 +313,7 @@ static void get_args(struct intr_frame *f, int* args, int n)
   }
 }
 
-struct *process_file get_process_file(int file_descriptor) 
+static struct process_file * get_process_file(int file_descriptor) 
 {
   /* Acquire file system lock                               */
   lock_acquire(&file_sys_lock);
