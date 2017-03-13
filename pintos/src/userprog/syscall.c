@@ -7,15 +7,18 @@
 #include "threads/init.h"
 #include "devices/input.h"
 #include "filesys/file.h"
+#include "filesys/file.c"
 #include "filesys/filesys.h"
 
 static void syscall_handler (struct intr_frame *);
 
 /* Collin Vossman - Project 2 */
 
+struct lock file_sys_lock;
 struct process_file 
 {
   struct file* filename;
+  struct lock file_lock;
   int file_descriptor;
   struct list_elem elem;
 };
@@ -35,12 +38,11 @@ void sys_seek(int fd, unsigned position);
 unsigned sys_tell(int fd);
 void sys_close(int fd);
 
-static void * create_kernel_ptr(const void* ptr);
 static void get_args(struct intr_frame *f, int* args, int n);
-static bool is_valid_ptr(const void* ptr);
 
 void syscall_init (void) 
 {
+  lock_init(&file_sys_lock)
   intr_register_int (0x30, 3, INTR_ON, syscall_handler, "syscall");
 }
 
@@ -161,7 +163,8 @@ bool sys_remove(const char *file)
 int sys_open(const char *file)
 {
   int fd = 1;
-  struct file temp = filesys_open(file);
+  struct file temp;
+  temp = filesys_open(file);
   if(temp != NULL)
   {
     fd++;
@@ -190,7 +193,7 @@ int sys_read(int fd, void *buffer, unsigned size)
 {
   if(fd == 0)
   {
-    input_getc(stdin);
+    input_getc();
   }
   struct process_file* pf;
   pf = get_process_file(fd);
@@ -198,7 +201,7 @@ int sys_read(int fd, void *buffer, unsigned size)
   struct off_t result;
   result = file_read(pf->filename, buffer, size);
   
-  if(result => 0)
+  if(result >= 0)
   {
     return (int)result;
   }
@@ -324,19 +327,3 @@ static struct process_file* get_process_file(int file_descriptor)
   return NULL;
 }
 
-static void * create_kernel_ptr(const void* ptr)
-{
-  // Return variable
-  void * kptr;
-
-  // Exit immediately if user is accessing protected memory
-  if (!is_valid_ptr(ptr) || ((kptr = pagedir_get_page(thread_current()->pagedir, ptr)) == NULL))
-    sys_exit(-1);
-
-  return kptr;
-}
-
-static bool is_valid_ptr(const void* ptr)
-{
-  return(is_user_vaddr(ptr) && (ptr >= EXECUTABLE_START));
-}
