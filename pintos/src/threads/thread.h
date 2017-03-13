@@ -90,8 +90,9 @@ struct thread
     int priority;                       /* Priority. */
     struct list_elem allelem;           /* List element for all threads list. */
     struct list_elem *kiddo;            /* marks the child thread */
-    struct thread *parent_thread;              /* marks the Parent thread */
-    struct list *list_of_kids;                  /* marks all the rugrats */
+    struct thread *parent_thread;       /* marks the Parent thread */
+    struct list *list_of_kids;          /* marks all the rugrats */
+    struct list file_list;              /*List of files in use by thread */
 
     /* Shared between thread.c and synch.c. */
     struct list_elem elem;              /* List element. */
