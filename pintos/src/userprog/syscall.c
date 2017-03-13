@@ -1,10 +1,10 @@
 #include "userprog/syscall.h"
+#include "userprog/process.h"
 #include <stdio.h>
 #include <syscall-nr.h>
 #include "threads/interrupt.h"
 #include "threads/thread.h"
 #include "threads/init.h"
-#include "userprog/process.h"
 
 static void syscall_handler (struct intr_frame *);
 
@@ -18,14 +18,12 @@ struct process_file
   struct list_elem elem;
 }
 
-void
-syscall_init (void) 
+void syscall_init (void) 
 {
   intr_register_int (0x30, 3, INTR_ON, syscall_handler, "syscall");
 }
 
-static void
-syscall_handler (struct intr_frame *f UNUSED) 
+static void syscall_handler (struct intr_frame *f UNUSED) 
 {
   int args[3]; // Since max args passed into any call is 3.
 
@@ -93,16 +91,14 @@ syscall_handler (struct intr_frame *f UNUSED)
 /* Collin Vossman - Project 2 */
 
 
-void
-syscall_halt(void)
+void syscall_halt(void)
 {
   shutdown_power_off();
 }
 
 
 /* Exit current process */
-void
-sys_exit(int status)
+void sys_exit(int status)
 {
   // Saves exit status to the current thread.
   struct thread * cur = thread_current();
@@ -115,8 +111,7 @@ sys_exit(int status)
   thread_exit();
 }
 
-pid_t
-sys_exec(const char *cmd_line)
+pid_t sys_exec(const char *cmd_line)
 {
   // Converts cmd_line to a kernel pointer.
   cmd_line = create_kernel_ptr(cmd_line);
@@ -127,105 +122,142 @@ sys_exec(const char *cmd_line)
   return thread_wait_for_load(pid) ? pid : -1; // Double check this statement.
 }
 
-int
-sys_wait(pid_t pid)
+int sys_wait(pid_t pid)
 {
   process_wait(pid);
 }
 
-bool
-sys_create(const char *file, unsigned initial_size)
+bool sys_create(const char *file, unsigned initial_size)
 {
-
+  return filesys_create(file, initial_size);
 }
 
-bool
-sys_remove(const char *file)
+bool sys_remove(const char *file)
 {
-
+  return filesys_remove(file);
 }
 
-int
-sys_open(const char *file)
+int sys_open(const char *file)
 {
-
+  int fd = 1;
+  struct file temp = filesys_open(file);
+  if(temp != NULL)
+  {
+    fd++;
+    return fd;
+  }
+  return -1;
 }
 
-int
-sys_filesize(int fd)
+int sys_filesize(int fd)
 {
-  int file_size;
   struct process_file* pfile;
   
   // Get process file.
   pfile = get_process_file(fd);
 
   // Check if file is NULL
-  if (pf == NULL) return -1;
+  if (pfile == NULL) return -1;
   
   // Check if file is NULL
-  if (pf->file == NULL) return -1;
+  if (pfile->filename == NULL) return -1;
   
-  return file_length(pfile->file);
+  return file_length(pfile->filename);
 }
 
-int
-sys_read(int fd, void *buffer, unsigned size)
+int sys_read(int fd, void *buffer, unsigned size)
 {
-
-}
-
-int
-sys_write(int fd, const void *buffer, unsigned size)
-{
+  if(fd == 0)
+  {
+    input_getc(stdin);
+  }
+  struct process_file* pf;
+  pf = get_process_file(fd);
   
+  struct off_t result;
+  result = file_read(pf->filename, buffer, size);
+  
+  if(result => 0)
+  {
+    return (int)result;
+  }
+  else
+  {
+    return -1;
+  }
 }
 
-void 
-sys_seek(int fd, unsigned position)
+int sys_write(int fd, const void *buffer, unsigned size)
+{
+  if(fd == 1)
+  {
+    if(size <= 300)
+    {
+      putbuf(buffer, size); 
+    }
+    else
+    {
+       unsigned size2 = size - 300;
+       putbuf(buffer, size);
+       putbuf(buffer, size2);
+    }
+  }
+  
+  struct process_file* pf;
+  pf = get_process_file(fd);
+  
+  struct off_t result;
+  result = file_write(pf->filename, buffer, size);
+  
+  return (int)result;
+}
+
+void sys_seek(int fd, unsigned position)
 {
   // Get the corresponding process file
-  struct process_file* pf;
-  if((pf = get_process_file(fd)) == NULL) return;
+  struct process_file* pfile;
+  if((pfile = get_process_file(fd)) == NULL) return;
 
   // LOCK while we check if file is valid.
-  lock_acquire(&(pf->file_lock));
-  if(pf->file == NULL)
+  lock_acquire(&(pfile->file_lock));
+  if(pfile->filename == NULL)
   {
-    lock_release(&(pf->file_lock));
+    lock_release(&(pfile->file_lock));
     return;
   }
 
   // SEEK
-  file_seek(pf->file, position);
-  lock_release(&(pf->file_lock));
+  file_seek(pfile->filename, position);
+  lock_release(&(pfile->file_lock));
 }
 
-unsigned
-sys_tell(int fd)
+unsigned sys_tell(int fd)
 {
   // Get the corresponding process file
-  struct process_file* pf;
-  if((pf = get_process_file(fd)) == NULL) return(-1); // Check get_process_file
+  struct process_file* pfile;
+  if((pfile = get_process_file(fd)) == NULL) return(-1); // Check get_process_file
 
   // LOCK while checking if valid file.
-  lock_acquire(&pf->file_lock);
-  if(pf->file == NULL)
+  lock_acquire(&pfile->file_lock);
+  if(pfile->filename == NULL)
   {
-    lock_release(&(pf->file_lock));
+    lock_release(&(pfile->file_lock));
     return -1;
   }
   
   // TELL
-  off_t pos = file_tell(pf->file);
-  lock_release(&pf->file_lock);
+  off_t pos = file_tell(pfile->filename);
+  lock_release(&pfile->file_lock);
   return pos;
 }
 
-void
-sys_close(int fd)
+void sys_close(int fd)
 {
-
+  struct process_file* pf;
+  
+  pf = get_process_file(fd);
+  
+  file_close(pf->filename);
 }
 
 /* EXTRA FUNCTIONS */
@@ -251,6 +283,29 @@ static void get_args(struct intr_frame *f, int* args, int n)
 
 static struct process_file* get_process_file(int file_descriptor) 
 {
+  /* Acquire file system lock                               */
+  lock_acquire(&file_sys_lock);
 
+  /* Get current thread                                     */
+  struct thread* cur = thread_current();
+  struct list_elem* cur_elem;
+
+  /* Iterate over file list of the current thread           */
+  for(cur_elem = list_begin(&cur->file_list);
+      cur_elem != list_end(&cur->file_list);
+      cur_elem = list_next(cur_elem))
+  {
+    /* Get the process file which holds the current element */
+    struct process_file *pfile = list_entry(cur_elem, struct process_file, elem);
+    if(pfile != NULL && file_descriptor == pfile->file_descriptor)
+      {
+        /* Return the file pointer if descriptors match     */
+        lock_release(&file_sys_lock);
+        return pfile;  
+      }
+  }
+  /* Return NULL if the file does not exist                 */  
+  lock_release(&file_sys_lock);
+  return NULL;
 }
 
