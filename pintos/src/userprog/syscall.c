@@ -17,6 +17,23 @@ struct process_file
   struct list_elem elem;
 };
 
+typedef int pid_t;
+// Explicit Function Declarations.
+void sys_halt(void);
+pid_t sys_exec(const char* cmd_line);
+int sys_wait(pid_t pid);
+bool sys_create(const char* file, unsigned initial_size);
+bool sys_remove(const char* file);
+int sys_open(const char* file);
+int sys_filesize(int fd);
+int sys_read(int fd, void* buffer, unsigned size);
+int sys_write(int fd, const void* buffer, unsigned size);
+void sys_seek(int fd, unsigned position);
+unsigned sys_tell(int fd);
+void sys_close(int fd);
+
+static void get_args(struct intr_frame *f, int* args, int n);
+
 void syscall_init (void) 
 {
   intr_register_int (0x30, 3, INTR_ON, syscall_handler, "syscall");
