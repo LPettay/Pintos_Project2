@@ -196,9 +196,15 @@ thread_create (const char *name, int priority,
          child = t;  
       }
   }
+<<<<<<< HEAD
   child -> parent = parent;
   list_push_back (&parent -> kids, &child->kiddo);
 
+=======
+  child -> parent_thread = parent;
+  list_push_back (&parent -> list_of_kids, &child->kiddo);
+}
+>>>>>>> 6d5910b74c6287513ae5c4e07ff9c98d762bff2e
    /*END OF AJ'S EDITS */
 
   /* Prepare thread for first run by initializing its stack.
