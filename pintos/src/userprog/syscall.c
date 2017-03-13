@@ -213,12 +213,12 @@ int sys_read(int fd, void *buffer, unsigned size)
   struct process_file* pf;
   pf = get_process_file(fd);
   
-  struct off_t result;
+  int result;
   result = file_read(pf->filename, buffer, size);
   
   if(result >= 0)
   {
-    return (int)result;
+    return result;
   }
   else
   {
@@ -245,10 +245,10 @@ int sys_write(int fd, const void *buffer, unsigned size)
   struct process_file* pf;
   pf = get_process_file(fd);
   
-  struct off_t result;
+  int result;
   result = file_write(pf->filename, buffer, size);
   
-  return (int)result;
+  return result;
 }
 
 void sys_seek(int fd, unsigned position)
