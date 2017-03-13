@@ -54,7 +54,7 @@ static void syscall_handler (struct intr_frame *f UNUSED)
     case SYS_REMOVE:
       get_args(f, args, 1);
       f->eax = sys_remove((const char *)args[0]);
-      break
+      break;
     case SYS_OPEN:
       get_args(f, &args[0], 1);
       f->eax = sys_open((const char *)args[0]);
