@@ -133,10 +133,10 @@ void sys_exit(int status)
 {
   // Saves exit status to the current thread.
   struct thread * cur = thread_current();
-  cur->exit_status = status;
+  cur->exit_status = (int *)status;
 
   // Print exit status.
-  printf("%s: exit(%d)\n", cur->name, cur->exit_status);
+  printf("%s: exit(%d)\n", cur->name, (int)cur->exit_status);
   
   // Exits current thread.
   thread_exit();
