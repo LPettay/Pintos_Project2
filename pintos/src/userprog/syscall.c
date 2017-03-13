@@ -136,7 +136,7 @@ void sys_exit(int status)
   cur->exit_status = status;
 
   // Print exit status.
-  printf("%s: exit(%d)\n", cur->name, (int)cur->exit_status);
+  printf("%s: exit(%d)\n", cur->name, cur->exit_status);
   
   // Exits current thread.
   thread_exit();
