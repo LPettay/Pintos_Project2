@@ -311,7 +311,7 @@ static void get_args(struct intr_frame *f, int* args, int n)
   }
 }
 
-*process_file get_process_file(int file_descriptor) 
+struct *process_file get_process_file(int file_descriptor) 
 {
   /* Acquire file system lock                               */
   lock_acquire(&file_sys_lock);
