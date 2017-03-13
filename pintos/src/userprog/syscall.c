@@ -10,6 +10,7 @@
 #include "filesys/file.c"
 #include "filesys/filesys.h"
 #include "filesys/off_t.h"
+#include "threads/synch.h"
 
 static void syscall_handler (struct intr_frame *);
 
