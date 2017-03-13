@@ -15,6 +15,7 @@
 static void syscall_handler (struct intr_frame *);
 
 #define EXECUTABLE_START (void *)0x08048000
+typedef int32_t off_t;
 
 /* Collin Vossman - Project 2 */
 
