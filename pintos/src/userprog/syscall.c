@@ -16,7 +16,7 @@ struct process_file
   struct lock file_lock;
   int file_descriptor;
   struct list_elem elem;
-}
+};
 
 void syscall_init (void) 
 {
