@@ -153,7 +153,7 @@ process_wait (tid_t child_tid UNUSED)
    
    if (child->status != THREAD_DYING || child->exit_status != NULL) 
    {
-      return child->exit_status;
+      return (int)child->exit_status;
    }
    
    int exit_status = -1;
