@@ -362,9 +362,11 @@ static void * create_kernel_ptr(const void* ptr)
   void * kptr;
 
   // Exit immediately if user is accessing protected memory
-  if (!is_valid_ptr(ptr) || ((kptr = pagedir_get_page(thread_current()->pagedir, ptr)) == NULL))
+  kptr = pagedir_get_page(thread_current()->pagedir, ptr);
+  if (!is_valid_ptr(ptr) || (kptr == NULL))
+  {
     sys_exit(-1);
-
+  }
   return kptr;
 }
 
