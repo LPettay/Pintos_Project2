@@ -94,6 +94,12 @@ struct thread
     struct list *list_of_kids;          /* marks all the rugrats */
     struct list file_list;              /*List of files in use by thread */
     int *fd;                            /*The File Directory number for this file */
+    int wait_cnt;                       /* Number of threads waiting on our completion */
+    struct lock wait_lock;              /* wait_cnt needs to be atomic        */
+    struct semaphore completion_sema;   /* Only upped once process is donezo  */
+    struct semaphore load_sema;         /* Only upped once process has loaded */
+    bool load_success;                  /* Thread finished loading            */
+    struct file * exe;                  /* Executable file                    */
 
     /* Shared between thread.c and synch.c. */
     struct list_elem elem;              /* List element. */
