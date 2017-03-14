@@ -1,0 +1,206 @@
+		           +--------------------------+
+			   |         CIS 520          |
+		           | PROJECT 2: USER PROGRAMS |
+		           |     DESIGN DOCUMENT      |
+		           +--------------------------+
+
+---- GROUP ----
+
+>> Fill in the names of your group members.
+
+Lance Pettay
+AJ Massey
+Collin Vossman
+
+---- PRELIMINARIES ----
+
+>> If you have any preliminary comments on your submission, notes for the
+>> TAs, or extra credit, please give them here.
+
+>> Please cite any offline or online sources you consulted while
+>> preparing your submission, other than the Pintos documentation, course
+>> text, lecture notes, and course staff.
+
+			   ARGUMENT PASSING
+			   ================
+
+---- DATA STRUCTURES ----
+
+>> A1: Copy here the declaration of each new or changed `struct' or
+>> `struct' member, global or static variable, `typedef', or
+>> enumeration.  Identify the purpose of each in 25 words or less.
+
+	char *save_ptr; //Keeps track of the location of the current token
+			//in file_name
+
+	char *argc; //Keeps track of the number of arguments
+
+	char *argv[]; //Holds the argument strings.
+
+	char *token; //Holds the current token in file_name
+
+---- ALGORITHMS ----
+
+>> A2: Briefly describe how you implemented argument parsing.  How do
+>> you arrange for the elements of argv[] to be in the right order?
+>> How do you avoid overflowing the stack page?
+
+	Argument parsing was implemented by first tokenizing the file_name
+	in process_execute() such that we split up the name of the file f-
+	rom the arguments. When start_process is called, the file_name and
+	the save_ptr (keeps track of which token we are on) is passed into 
+	load() which then passes the file_name and save_ptr into setup_st-	
+	ack() along with esp.
+
+	In setup_stack(), arguments are pushed from the top of virtual me-
+	mory. Order doesn't matter at this point. The stack is aligned, a-
+	nd then the addresses of the arguments are pushed in right-to-left
+	order. This is done by simply iterating from the largest index in 
+	argv[] down to the lowest index. Each push onto the stack is foll-
+	owed by the stack being decremented. Once arguments are finished, 
+	argc and a fake return address are pushed.
+
+---- RATIONALE ----
+
+>> A3: Why does Pintos implement strtok_r() but not strtok()?
+
+	Pintos uses str_tok_r() instead of strtok() becaus str_tok_r() is
+	a reentrant function, which means its execution can take place in
+	multiple threads simultaneously and can be interrupted without h-
+	ampering the execution. After an interrupt, strtok_r() will pick
+	up right where it left off with no adverse effects.
+
+>> A4: In Pintos, the kernel separates commands into an executable name
+>> and arguments.  In Unix-like systems, the shell does this
+>> separation.  Identify at least two advantages of the Unix approach.
+
+	1. By allowing the shell to handle this, it allows for a much sa-
+	   fer solution since without this separation, it is easier for a
+	   user to pass malicious strings into the commands. It is safer
+	   to do this in the shell rather than in the kernel, since the
+	   kernel is much more important/sensitive.
+
+	2. This will reduce time inside of the kernel. The less time ins-
+	   ide the kernel, the better for performance reasons.
+
+			     SYSTEM CALLS
+			     ============
+	
+
+***Information on System Calls can be found in AJ/Collin's Design Doc***
+
+
+
+---- DATA STRUCTURES ----
+
+>> B1: Copy here the declaration of each new or changed `struct' or
+>> `struct' member, global or static variable, `typedef', or
+>> enumeration.  Identify the purpose of each in 25 words or less.
+
+>> B2: Describe how file descriptors are associated with open files.
+>> Are file descriptors unique within the entire OS or just within a
+>> single process?
+
+---- ALGORITHMS ----
+
+>> B3: Describe your code for reading and writing user data from the
+>> kernel.
+
+>> B4: Suppose a system call causes a full page (4,096 bytes) of data
+>> to be copied from user space into the kernel.  What is the least
+>> and the greatest possible number of inspections of the page table
+>> (e.g. calls to pagedir_get_page()) that might result?  What about
+>> for a system call that only copies 2 bytes of data?  Is there room
+>> for improvement in these numbers, and how much?
+
+>> B5: Briefly describe your implementation of the "wait" system call
+>> and how it interacts with process termination.
+
+>> B6: Any access to user program memory at a user-specified address
+>> can fail due to a bad pointer value.  Such accesses must cause the
+>> process to be terminated.  System calls are fraught with such
+>> accesses, e.g. a "write" system call requires reading the system
+>> call number from the user stack, then each of the call's three
+>> arguments, then an arbitrary amount of user memory, and any of
+>> these can fail at any point.  This poses a design and
+>> error-handling problem: how do you best avoid obscuring the primary
+>> function of code in a morass of error-handling?  Furthermore, when
+>> an error is detected, how do you ensure that all temporarily
+>> allocated resources (locks, buffers, etc.) are freed?  In a few
+>> paragraphs, describe the strategy or strategies you adopted for
+>> managing these issues.  Give an example.
+
+---- SYNCHRONIZATION ----
+
+>> B7: The "exec" system call returns -1 if loading the new executable
+>> fails, so it cannot return before the new executable has completed
+>> loading.  How does your code ensure this?  How is the load
+>> success/failure status passed back to the thread that calls "exec"?
+
+>> B8: Consider parent process P with child process C.  How do you
+>> ensure proper synchronization and avoid race conditions when P
+>> calls wait(C) before C exits?  After C exits?  How do you ensure
+>> that all resources are freed in each case?  How about when P
+>> terminates without waiting, before C exits?  After C exits?  Are
+>> there any special cases?
+
+---- RATIONALE ----
+
+>> B9: Why did you choose to implement access to user memory from the
+>> kernel in the way that you did?
+
+>> B10: What advantages or disadvantages can you see to your design
+>> for file descriptors?
+
+>> B11: The default tid_t to pid_t mapping is the identity mapping.
+>> If you changed it, what advantages are there to your approach?
+
+			   SURVEY QUESTIONS
+			   ================
+
+Answering these questions is optional, but it will help us improve the
+course in future quarters.  Feel free to tell us anything you
+want--these questions are just to spur your thoughts.  You may also
+choose to respond anonymously in the course evaluations at the end of
+the quarter.
+
+>> In your opinion, was this assignment, or any one of the three problems
+>> in it, too easy or too hard?  Did it take too long or too little time?
+	
+	It's too hard, but it's only due to lack of guidance. Most of the 
+	time spent on these projects is just staring blankly at the pdf, 
+	hoping that somehow we'll know what to do. There are a lot of
+	functions within pintos, and most of them don't have descriptive
+	enough comments. I may know what a function does, but I may not
+	know when, where, or why it is called.
+
+	Once we do finally find a direction to take, we are still mostly
+	uncertain about whether what we're doing is correct, and when we
+	believe that we've finished, and nothing is working, then
+	troubleshooting becomes nearly impossible due to the sheer amount
+	of vectors that the problem could be occuring.
+
+>> Did you find that working on a particular part of the assignment gave
+>> you greater insight into some aspect of OS design?
+
+	All of these projects give greater insight, it's just that the 
+	insight is hard to come by on our own.
+
+>> Is there some particular fact or hint we should give students in
+>> future quarters to help them solve the problems?  Conversely, did you
+>> find any of our guidance to be misleading?
+
+	It would be nice if we ran-by the projects in class periodically,
+	even if it's only a few minutes at the end of each class. Ideally,
+	the professor would actually open up pintos and look through the
+	code with us, allowing students to ask questions and giving guidance
+	along the way. The way it is now, there is a huge disconnect between
+	CIS 520 and the projects for CIS 520. Projects feel like something 
+	that are tacked onto the class that the professor barely even acknowledges.
+	I want to know that the professor knows what we are going through, and 
+	that he understands the projects himself.
+
+>> Do you have any suggestions for the TAs to more effectively assist
+>> students, either for future quarters or the remaining projects?
+
+>> Any other comments?
