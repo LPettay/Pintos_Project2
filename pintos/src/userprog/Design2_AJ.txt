@@ -1,0 +1,207 @@
+		           +--------------------------+
+			   |         CIS 520          |
+		           | PROJECT 2: USER PROGRAMS |
+		           |     DESIGN DOCUMENT      |
+		           +--------------------------+
+
+---- GROUP ----
+
+>> Fill in the names of your group members.
+
+AJ Massey
+Lance Pettay
+Collin Vossman
+
+---- PRELIMINARIES ----
+
+>> If you have any preliminary comments on your submission, notes for the
+>> TAs, or extra credit, please give them here.
+
+>> Please cite any offline or online sources you consulted while
+>> preparing your submission, other than the Pintos documentation, course
+>> text, lecture notes, and course staff.
+
+			   ARGUMENT PASSING (Lance's Project)
+			   ================
+
+---- DATA STRUCTURES ----
+
+>> A1: Copy here the declaration of each new or changed `struct' or
+>> `struct' member, global or static variable, `typedef', or
+>> enumeration.  Identify the purpose of each in 25 words or less.
+
+---- ALGORITHMS ----
+
+>> A2: Briefly describe how you implemented argument parsing.  How do
+>> you arrange for the elements of argv[] to be in the right order?
+>> How do you avoid overflowing the stack page?
+
+---- RATIONALE ----
+
+>> A3: Why does Pintos implement strtok_r() but not strtok()?
+
+>> A4: In Pintos, the kernel separates commands into an executable name
+>> and arguments.  In Unix-like systems, the shell does this
+>> separation.  Identify at least two advantages of the Unix approach.
+
+			     SYSTEM CALLS (AJ and Collin's Project)
+			     ============
+
+---- DATA STRUCTURES ----
+
+>> B1: Copy here the declaration of each new or changed `struct' or
+>> `struct' member, global or static variable, `typedef', or
+>> enumeration.  Identify the purpose of each in 25 words or less.
+
+-- In thread.h:
+	1) enum EXIT_SUCCESS -> marks when a thread exits succesfully.
+	2) struct list_elem *kiddo -> marks a child thread.
+	3) struct thread *parent_thread -> marks a parent thread.
+	4) struct list *list_of_kids -> marks all of the children threads.
+	5) struct list file_list -> lists files in use by thread.
+	6) int *fd -> File Directory of this thread.
+	7) int wait_cnt -> Keeps track of threads waiting on completion.
+	8) struct lock wait_lock -> lock for wait_cnt.
+	9) struct semaphore completion_sema -> Released when process is finished.
+	10) struct semaphore load_sema -> Released when process is loaded.
+	11) bool load_success -> Marks when thread has been loaded.
+	12) struct file *exe -> A file used to store an executable.
+	13) int *exit_status -> Holds the exit status of the thread.
+	14) struct thread *parent -> USERPROG: Marks parent thread.
+	15) struct list *kids -> USERPROG: Marks all children threads.
+	16) bool waiting -> USERPROG: Marks whether process is already waiting on this thread.
+	17) struct list_elem child -> USERPROG: Marks the child thread element.
+
+-- In thread.c:
+	1) Created section for adding marking Parent/Child threads appropriately (Line 198-208).
+
+-- In process.c:
+	1) Created section for process_wait (Lines 125-162).
+
+-- In syscall.c:
+	1) typedef int32_t off_t -> this assists in keeping track of off_t size.
+	2) Created section for syscall_halt (Line 131).
+	3) Created sections for sys_wait, sys_create, sys_remove, and sys_open (Lines 165-199).
+	4) Created sections for sys_read and sys_write (Lines 220 - 270).
+	5) Created section for sys_close (Lines 315 - 323).
+
+>> B2: Describe how file descriptors are associated with open files.
+>> Are file descriptors unique within the entire OS or just within a
+>> single process?
+
+-- File Descriptors are unique numbers that assist in identifying files that are
+   stored within a process. The File Descriptors are not unique to the entire
+   system, just to the process that is running.
+
+---- ALGORITHMS ----
+
+>> B3: Describe your code for reading and writing user data from the
+>> kernel.
+
+-- Our process for Reading was to find out what the File Descriptor was. If it
+   was a "0", then we simply read from the keyboard strokes of the user. Else,
+   we located the file associated with the File Descriptor and then we began
+   reading the file and returned the bytes read if it was greater than or equal
+   to 0 bytes. Else, we returned a -1.
+
+-- Our process for Writing was to find out what the File Descriptor was. If it
+   was a "1", then we checked to make sure the size being written was not more
+   than 300. If it wasn't, then we used the putbuf() function. Else we broke up
+   the buffer based on the size (split by 300) and then used the putbuf(). If
+   the File Descriptor was NOT "1", then we located the file that we were going
+   to write to and return the amount of bytes written to the file.
+
+>> B4: Suppose a system call causes a full page (4,096 bytes) of data
+>> to be copied from user space into the kernel.  What is the least
+>> and the greatest possible number of inspections of the page table
+>> (e.g. calls to pagedir_get_page()) that might result?  What about
+>> for a system call that only copies 2 bytes of data?  Is there room
+>> for improvement in these numbers, and how much?
+
+-- The least would certainly be 0 (if it were protected memory). The most that I see it being is somewhere in the range of 14 inspections (that is, 4096 divided by 300 for the size of the buffer). If this were only copying 2 bytes, it would still have a least amount of 0 (for the same reason as above, but the most amount was easily be 1. There is definitely room for improvement for this but I would say that the improvement would not be very great. It would mostly be focused on the higher number of bytes being read in.
+
+>> B5: Briefly describe your implementation of the "wait" system call
+>> and how it interacts with process termination.
+
+-- Our current implentation for the "wait" system call is to throw a call over to process_wait in process.c. From here, we established if the thread is a child thread that matches the tid provided. If it is, we take that thread and find out if it has already had a process call the "wait" call on it. If not, then we check the status of the child and, as long as it is not DYING and the exit_status is not NULL, then we return the exit status of the child. If, for any reason, anything fails along the way, we return a -1 to report that the requirements were not met by the child thread.
+
+>> B6: Any access to user program memory at a user-specified address
+>> can fail due to a bad pointer value.  Such accesses must cause the
+>> process to be terminated.  System calls are fraught with such
+>> accesses, e.g. a "write" system call requires reading the system
+>> call number from the user stack, then each of the call's three
+>> arguments, then an arbitrary amount of user memory, and any of
+>> these can fail at any point.  This poses a design and
+>> error-handling problem: how do you best avoid obscuring the primary
+>> function of code in a morass of error-handling?  Furthermore, when
+>> an error is detected, how do you ensure that all temporarily
+>> allocated resources (locks, buffers, etc.) are freed?  In a few
+>> paragraphs, describe the strategy or strategies you adopted for
+>> managing these issues.  Give an example.
+
+-- 
+
+---- SYNCHRONIZATION ----
+
+>> B7: The "exec" system call returns -1 if loading the new executable
+>> fails, so it cannot return before the new executable has completed
+>> loading.  How does your code ensure this?  How is the load
+>> success/failure status passed back to the thread that calls "exec"?
+
+>> B8: Consider parent process P with child process C.  How do you
+>> ensure proper synchronization and avoid race conditions when P
+>> calls wait(C) before C exits?  After C exits?  How do you ensure
+>> that all resources are freed in each case?  How about when P
+>> terminates without waiting, before C exits?  After C exits?  Are
+>> there any special cases?
+
+---- RATIONALE ----
+
+>> B9: Why did you choose to implement access to user memory from the
+>> kernel in the way that you did?
+
+-- Our implementation for System Calls kind of just led us down the path for the Memory access. It was completely stumbled upon and it was not realized that we had done that until Lance pointed out that Collin and I had already taken care of it without knowing we were.
+
+>> B10: What advantages or disadvantages can you see to your design
+>> for file descriptors?
+
+-- I can see that advantage that each thread has it's own FD, which means that we know exactly which thread is linked with which FD. However, a disadvantage of that would be if the thread were not to respond to that specified FD or if somehow a program called the wrong FD an ended up modifying a thread that it did not mean to just because of a messed up FD that was input.
+
+>> B11: The default tid_t to pid_t mapping is the identity mapping.
+>> If you changed it, what advantages are there to your approach?
+
+-- We avoided changing the tid_t to pid_t mapping at all and utilized that which had been given to us.
+
+			   SURVEY QUESTIONS
+			   ================
+
+Answering these questions is optional, but it will help us improve the
+course in future quarters.  Feel free to tell us anything you
+want--these questions are just to spur your thoughts.  You may also
+choose to respond anonymously in the course evaluations at the end of
+the quarter.
+
+>> In your opinion, was this assignment, or any one of the three problems
+>> in it, too easy or too hard?  Did it take too long or too little time?
+
+-- To me, after solving the initial problem of finding out how the File Directory worked with the file itself, it was much easier to do the System Calls section. Prior to that, it was difficult to understand how everything fit together.
+
+>> Did you find that working on a particular part of the assignment gave
+>> you greater insight into some aspect of OS design?
+
+-- Working on the System Calls section allowed me to see just how easy it would be to change how the system reacts to certain system calls. 
+
+>> Is there some particular fact or hint we should give students in
+>> future quarters to help them solve the problems?  Conversely, did you
+>> find any of our guidance to be misleading?
+
+-- None of the guidace was misleading, however, I would say that advising the students to make sure to find out how the File Descriptors fit in with the files themselves would be a great hint, if you chose to assist them further.
+
+>> Do you have any suggestions for the TAs to more effectively assist
+>> students, either for future quarters or the remaining projects?
+
+-- No, I don't have any interaction with the TA, so I don't know how well/bad they are at assisting the students.
+
+>> Any other comments?
+
+-- None.
