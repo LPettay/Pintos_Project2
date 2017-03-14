@@ -491,6 +491,18 @@ init_thread (struct thread *t, const char *name, int priority)
   t->priority = priority;
   t->magic = THREAD_MAGIC;
   list_push_back (&all_list, &t->allelem);
+   
+  // Project 2
+  list_init(&t->file_list);
+  t->fd = STDOUT_FILENO + 1; 
+  t->wait_cnt = 0;
+  lock_init(&t->wait_lock);
+  t->finished = false;
+  sema_init(&t->completion_sema, 0);
+  t->exit_status = EXIT_SUCCESS;
+  sema_init(&t->load_sema, 0);
+  t->load_success = false;
+  t->exe = NULL;
 }
 
 /* Allocates a SIZE-byte frame at the top of thread T's stack and
@@ -506,6 +518,23 @@ alloc_frame (struct thread *t, size_t size)
   return t->stack;
 }
 
+bool thread_wait_for_load(int tid)
+{
+  struct thread * wait_thd = thread_get(tid);
+  ASSERT(wait_thd != NULL);
+
+  // Wait for thread to load
+  sema_down(&wait_thd->load_sema);
+
+  if(!wait_thd->load_success)
+  {
+    wait_thd->exit_status = -1;
+  }
+
+  // Return successful load
+  return wait_thd->load_success;
+}
+
 /* Chooses and returns the next thread to be scheduled.  Should
    return a thread from the run queue, unless the run queue is
    empty.  (If the running thread can continue running, then it
@@ -519,6 +548,25 @@ next_thread_to_run (void)
   else
     return list_entry (list_pop_front (&ready_list), struct thread, elem);
 }
+
+// Project 2
+bool thread_wait_for_load(int tid)
+{
+  struct thread * wait_thd = thread_get(tid);
+  ASSERT(wait_thd != NULL);
+
+  // Wait for thread to load
+  sema_down(&wait_thd->load_sema);
+
+  if(!wait_thd->load_success)
+  {
+    wait_thd->exit_status = -1;
+  }
+
+  // Return successful load
+  return wait_thd->load_success;
+}
+
 
 /* Completes a thread switch by activating the new thread's page
    tables, and, if the previous thread is dying, destroying it.
