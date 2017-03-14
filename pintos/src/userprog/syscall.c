@@ -1,19 +1,19 @@
-#include "userprog/syscall.h"
-#include "userprog/process.h"
 #include <stdio.h>
 #include <syscall-nr.h>
+#include "userprog/syscall.h"
+#include "userprog/process.h"
 #include "threads/interrupt.h"
 #include "threads/thread.h"
 #include "threads/init.h"
+#include "threads/vaddr.h"
+#include "threads/synch.h"
 #include "devices/input.h"
 #include "devices/shutdown.h"
 #include "filesys/file.h"
 #include "filesys/file.c"
 #include "filesys/filesys.h"
 #include "filesys/off_t.h"
-#include "threads/synch.h"
 #include "userprog/pagedir.h"
-#include "threads/vaddr.h"
 
 static void syscall_handler (struct intr_frame *);
 
