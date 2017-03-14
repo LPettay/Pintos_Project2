@@ -637,7 +637,7 @@ allocate_tid (void)
    Used by switch.S, which can't figure it out on its own. */
 uint32_t thread_stack_ofs = offsetof (struct thread, stack);
 
-static struct thread *thread_get(int pid)
+struct thread *thread_get(int pid)
 {
   struct list_elem* elem;
   for (elem = list_begin(&all_list); 
