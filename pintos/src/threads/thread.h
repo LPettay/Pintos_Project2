@@ -102,6 +102,7 @@ struct thread
     struct semaphore load_sema;         /* Only upped once process has loaded */
     bool load_success;                  /* Thread finished loading            */
     struct file * exe;                  /* Executable file                    */
+    int *exit_status;                    /* Holds the exit status of thread */
 
     /* Shared between thread.c and synch.c. */
     struct list_elem elem;              /* List element. */
@@ -109,7 +110,6 @@ struct thread
 #ifdef USERPROG
     /* Owned by userprog/process.c. */
     uint32_t *pagedir;                  /* Page directory. */
-    int *exit_status;                    /* Holds the exit status of thread */
     struct thread *parent;              /* marks the Parent thread */
     struct list *kids;                  /* marks all the rugrats */
     bool waiting;                       /* marks whether already waiting on this thread or not */
