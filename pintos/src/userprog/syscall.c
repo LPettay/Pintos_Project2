@@ -11,6 +11,8 @@
 #include "filesys/filesys.h"
 #include "filesys/off_t.h"
 #include "threads/synch.h"
+#include "userprog/pagedir.h"
+#include "threads/vaddr.h"
 
 static void syscall_handler (struct intr_frame *);
 
@@ -356,13 +358,14 @@ static struct process_file * get_process_file(int file_descriptor)
   lock_release(&file_sys_lock);
   return NULL;
 }
+
 static void * create_kernel_ptr(const void* ptr)
 {
   // Return variable
-  void * kptr;
+  void *kptr;
 
   // Exit immediately if user is accessing protected memory
-  kptr = pagedir_get_page(thread_current()->pagedir, ptr);
+  kptr = (void *)pagedir_get_page(thread_current()->pagedir, ptr);
   if (!is_valid_ptr(ptr) || (kptr == NULL))
   {
     sys_exit(-1);
