@@ -187,24 +187,31 @@ thread_create (const char *name, int priority,
   tid = t->tid = allocate_tid ();
    
   /*AJ MASSEY - The next several lines are used to create and store kids onto a parent's list. */
+  #ifdef USERPROG
   struct thread *child;
-  child = thread_current();
   struct list_elem *e;
   struct thread *parent;
   parent = thread_current();
   for (e = list_begin (&all_list); e != list_end (&all_list);
        e = list_next (e))
   {
+	  int what = 0;
+	  printf("Thread.c -> Thread_Create Function -> %d\n", what);
+	  what++;
       struct thread *t = list_entry (e, struct thread, allelem);
       if( t -> tid == tid) 
       {
          child = t;  
       }
+	  else
+	  {
+		  child = NULL;
+	  }
   }
 
   child -> parent_thread = parent;
-  list_push_back (parent -> list_of_kids, child->kiddo);
-
+  list_push_back (&parent -> list_of_kids, &child->kiddo);
+	#endif
    /*END OF AJ'S EDITS */
 
   /* Prepare thread for first run by initializing its stack.
@@ -357,6 +364,9 @@ thread_foreach (thread_action_func *func, void *aux)
   for (e = list_begin (&all_list); e != list_end (&all_list);
        e = list_next (e))
     {
+		int what = 0;
+	  printf("Thread.c -> Thread_Foreach Function -> %d", what);
+	  what++;
       struct thread *t = list_entry (e, struct thread, allelem);
       func (t, aux);
     }
@@ -486,7 +496,7 @@ init_thread (struct thread *t, const char *name, int priority)
   ASSERT (PRI_MIN <= priority && priority <= PRI_MAX);
   ASSERT (name != NULL);
 
-  list_init(&t->file_list);
+  //list_init(&t->file_list);
   memset (t, 0, sizeof *t);
   t->status = THREAD_BLOCKED;
   strlcpy (t->name, name, sizeof t->name);
@@ -646,6 +656,9 @@ static struct thread *thread_get(int pid)
        elem != list_end(&all_list);
        elem = list_next(elem))
   {
+	  int what = 0;
+	  printf("Thread.c -> Thread_Get Function -> %d", what);
+	  what++;
     struct thread* t = list_entry(elem, struct thread, allelem);
     if (t->tid == pid)
       return t;
