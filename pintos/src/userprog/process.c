@@ -63,7 +63,7 @@ process_execute (const char *file_name)
 
   /* Lance Pettay 3/2/17 - Tokenize file_name by using str_tok_r. Running str_tok_r
      once will get the first 'word' defined by our delimiters. In this case, that
-     is the file name. Some inspiration from ryantimwilson's Github */
+     is the file name. */
 
   char *save_ptr;
   file_name = strtok_r((char *)file_name, " ", &save_ptr);
@@ -93,8 +93,6 @@ start_process (void *file_name_)
   if_.gs = if_.fs = if_.es = if_.ds = if_.ss = SEL_UDSEG;
   if_.cs = SEL_UCSEG;
   if_.eflags = FLAG_IF | FLAG_MBS;
-
-  /* LP - Calls load with file_name and save_ptr */
   success = load (file_name, &if_.eip, &if_.esp, &save_ptr);
 
   /* If load failed, quit. */
@@ -127,11 +125,13 @@ process_wait (tid_t child_tid UNUSED)
    struct thread *parent = thread_current();
    struct thread *child;
    struct list_elem *e;
-   child = thread_current();
    
    for (e = list_begin (parent->list_of_kids); e != list_end (parent->list_of_kids);
        e = list_next (e))
     {
+	  int what = 0;
+	  printf("Process.c -> Process_Wait Function -> %d", what);
+	  what++;
       child = list_entry (e, struct thread, child);
       if(child->tid == child_tid) break;
     }
@@ -148,10 +148,6 @@ process_wait (tid_t child_tid UNUSED)
       {
          return -1;
       }
-   }
-   else
-   {
-      return -1;  
    }
    
    if (child->status != THREAD_DYING || child->exit_status != NULL) 
@@ -373,7 +369,7 @@ load (const char *file_name, void (**eip) (void), void **esp, char **save_ptr)
         }
     }
 
-  /* LP - Set up stack with file_name and save_ptr */
+  /* Set up stack. */
   if (!setup_stack (esp, file_name, save_ptr))
     goto done;
 
