@@ -498,11 +498,11 @@ init_thread (struct thread *t, const char *name, int priority)
    
   // Project 2
   list_init(&t->file_list);
-  t->fd = STDOUT_FILENO + 1; 
+  t->fd = (int *)STDOUT_FILENO + 1; 
   t->wait_cnt = 0;
   lock_init(&t->wait_lock);
   sema_init(&t->completion_sema, 0);
-  t->exit_status = EXIT_SUCCESS;
+  t->exit_status = (int *)EXIT_SUCCESS;
   sema_init(&t->load_sema, 0);
   t->load_success = false;
   t->exe = NULL;
@@ -531,7 +531,7 @@ bool thread_wait_for_load(int tid)
 
   if(!wait_thd->load_success)
   {
-    wait_thd->exit_status = -1;
+    wait_thd->exit_status = (int *)-1;
   }
 
   // Return successful load
@@ -635,7 +635,20 @@ allocate_tid (void)
 
   return tid;
 }
-
+
 /* Offset of `stack' member within `struct thread'.
    Used by switch.S, which can't figure it out on its own. */
 uint32_t thread_stack_ofs = offsetof (struct thread, stack);
+
+static struct thread *thread_get(int pid)
+{
+  struct list_elem* elem;
+  for (elem = list_begin(&all_list); 
+       elem != list_end(&all_list);
+       elem = list_next(elem))
+  {
+    struct thread* t = list_entry(elem, struct thread, allelem);
+    if (t->tid == pid)
+      return t;
+  }
+}
