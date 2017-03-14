@@ -188,6 +188,7 @@ thread_create (const char *name, int priority,
    
   /*AJ MASSEY - The next several lines are used to create and store kids onto a parent's list. */
   struct thread *child;
+  child = thread_current();
   struct list_elem *e;
   struct thread *parent;
   parent = thread_current();
