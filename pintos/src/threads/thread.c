@@ -567,6 +567,57 @@ bool thread_wait_for_load(int tid)
   return wait_thd->load_success;
 }
 
+int thread_wait_for_completion(int tid)
+{
+  struct thread * wait_thd = thread_get(tid);
+  if(wait_thd == NULL)
+  {
+    return(-1);
+  }
+
+  int ret_status;
+
+
+  if(!wait_thd->finished)
+  {
+    lock_acquire(&wait_thd->wait_lock);
+    wait_thd->wait_cnt++;
+    lock_release(&wait_thd->wait_lock);
+
+    sema_down(&wait_thd->completion_sema);
+
+    lock_acquire(&wait_thd->wait_lock);
+    wait_thd->wait_cnt--;
+
+    ret_status = wait_thd->exit_status;
+    lock_release(&wait_thd->wait_lock);
+  }
+  else
+  {
+    ret_status = wait_thd->exit_status;
+  }
+
+  return(ret_status);
+}
+
+static int thread_get_wait_cnt(struct thread * thd)
+{
+  ASSERT(thd != NULL);
+  int cnt;
+
+  lock_acquire(&thd->wait_lock);
+  cnt = thd->wait_cnt;
+  lock_release(&thd->wait_lock);
+
+  return(cnt);
+}
+
+static void thread_free_resources(struct thread * thd)
+{
+  ASSERT(thd != NULL);
+  ASSERT(thd != running_thread());
+  palloc_free_page(thd);
+}
 
 /* Completes a thread switch by activating the new thread's page
    tables, and, if the previous thread is dying, destroying it.
