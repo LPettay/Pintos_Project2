@@ -148,4 +148,7 @@ void thread_set_nice (int);
 int thread_get_recent_cpu (void);
 int thread_get_load_avg (void);
 
+/* Created by Collin */
+bool thread_wait_for_load(int tid);
+
 #endif /* threads/thread.h */
