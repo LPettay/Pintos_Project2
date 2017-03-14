@@ -10,7 +10,6 @@
 #include "devices/input.h"
 #include "devices/shutdown.h"
 #include "filesys/file.h"
-#include "filesys/file.c"
 #include "filesys/filesys.h"
 #include "filesys/off_t.h"
 #include "userprog/pagedir.h"
