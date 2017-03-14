@@ -158,5 +158,6 @@ int thread_get_load_avg (void);
 
 /* Created by Collin */
 bool thread_wait_for_load(int tid);
+static struct thread *thread_get(int pid);
 
 #endif /* threads/thread.h */
