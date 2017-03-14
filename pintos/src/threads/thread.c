@@ -501,7 +501,6 @@ init_thread (struct thread *t, const char *name, int priority)
   t->fd = STDOUT_FILENO + 1; 
   t->wait_cnt = 0;
   lock_init(&t->wait_lock);
-  t->finished = false;
   sema_init(&t->completion_sema, 0);
   t->exit_status = EXIT_SUCCESS;
   sema_init(&t->load_sema, 0);
