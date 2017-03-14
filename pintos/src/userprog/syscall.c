@@ -59,6 +59,7 @@ void syscall_init (void)
 
 static void syscall_handler (struct intr_frame *f UNUSED) 
 {
+  printf("syscall_handler");
   int args[3]; // Since max args passed into any call is 3.
 
   // Gets the number for the system call.  Check lib/syscallnr.h for numbers.
@@ -127,6 +128,7 @@ static void syscall_handler (struct intr_frame *f UNUSED)
 
 void syscall_halt(void)
 {
+  printf("syscall_halt");
   shutdown_power_off();
 }
 
@@ -134,6 +136,7 @@ void syscall_halt(void)
 /* Exit current process */
 void sys_exit(int status)
 {
+  printf("sys_exit");
   // Saves exit status to the current thread.
   struct thread * cur = thread_current();
   cur->exit_status = (int *)status;
@@ -147,6 +150,7 @@ void sys_exit(int status)
 
 pid_t sys_exec(const char *cmd_line)
 {
+  printf("sys_exec");
   // Converts cmd_line to a kernel pointer.
   cmd_line = create_kernel_ptr(cmd_line);
 
@@ -158,11 +162,13 @@ pid_t sys_exec(const char *cmd_line)
 
 int sys_wait(pid_t pid)
 {
+  printf("sys_wait");
   return process_wait(pid);
 }
 
 bool sys_create(const char *file, unsigned initial_size)
 {
+  printf("sys_create");
   return filesys_create(file, initial_size);
 }
 
@@ -173,6 +179,7 @@ bool sys_remove(const char *file)
 
 int sys_open(const char *file)
 {
+  printf("sys_open");
   int fd = 1;
   struct file *temp;
   struct thread *current = thread_current();
@@ -194,6 +201,7 @@ int sys_open(const char *file)
 
 int sys_filesize(int fd)
 {
+  printf("sys_filesize");
   struct process_file * pfile;
   
   // Get process file.
@@ -210,6 +218,7 @@ int sys_filesize(int fd)
 
 int sys_read(int fd, void *buffer, unsigned size)
 {
+  printf("sys_read");
   if(fd == 0)
   {
     input_getc();
@@ -235,6 +244,7 @@ int sys_read(int fd, void *buffer, unsigned size)
 
 int sys_write(int fd, const void *buffer, unsigned size)
 {
+  printf("sys_write");
   if(fd == 1)
   {
     if(size <= 300)
@@ -263,6 +273,7 @@ int sys_write(int fd, const void *buffer, unsigned size)
 
 void sys_seek(int fd, unsigned position)
 {
+  printf("sys_seek");
   // Get the corresponding process file
   struct process_file* pfile;
   pfile = get_process_file(fd);
@@ -282,6 +293,7 @@ void sys_seek(int fd, unsigned position)
 
 unsigned sys_tell(int fd)
 {
+  printf("sys_tell");
   // Get the corresponding process file
   struct process_file* pfile;
   pfile = get_process_file(fd);
@@ -302,6 +314,7 @@ unsigned sys_tell(int fd)
 
 void sys_close(int fd)
 {
+  printf("sys_close");
   struct process_file* pf;
   pf = get_process_file(fd);
   if (pf == NULL)
@@ -321,6 +334,7 @@ void sys_close(int fd)
 */
 static void get_args(struct intr_frame *f, int* args, int n)
 {
+  printf("get_args");
   int * stack_args = f->esp + sizeof(int);
   for (int i = 0; i < n; i++)
   {
@@ -334,6 +348,7 @@ static void get_args(struct intr_frame *f, int* args, int n)
 
 static struct process_file * get_process_file(int file_descriptor) 
 {
+  printf("process_file");
   /* Acquire file system lock                               */
   lock_acquire(&file_sys_lock);
 
@@ -362,6 +377,7 @@ static struct process_file * get_process_file(int file_descriptor)
 
 static void * create_kernel_ptr(const void* ptr)
 {
+  printf("create_kernel_ptr");
   // Return variable
   void *kptr;
 
@@ -376,5 +392,6 @@ static void * create_kernel_ptr(const void* ptr)
 
 static bool is_valid_ptr(const void* ptr)
 {
+  printf("is_valid_ptr");
   return(is_user_vaddr(ptr) && (ptr >= EXECUTABLE_START));
 }
