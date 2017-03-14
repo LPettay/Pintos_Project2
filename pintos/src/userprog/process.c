@@ -125,6 +125,7 @@ process_wait (tid_t child_tid UNUSED)
    struct thread *parent = thread_current();
    struct thread *child;
    struct list_elem *e;
+   child = thread_current();
    
    for (e = list_begin (parent->kids); e != list_end (parent->kids);
        e = list_next (e))
