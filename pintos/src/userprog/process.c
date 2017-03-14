@@ -63,7 +63,7 @@ process_execute (const char *file_name)
 
   /* Lance Pettay 3/2/17 - Tokenize file_name by using str_tok_r. Running str_tok_r
      once will get the first 'word' defined by our delimiters. In this case, that
-     is the file name. */
+     is the file name. Some inspiration from ryantimwilson's Github */
 
   char *save_ptr;
   file_name = strtok_r((char *)file_name, " ", &save_ptr);
@@ -93,6 +93,8 @@ start_process (void *file_name_)
   if_.gs = if_.fs = if_.es = if_.ds = if_.ss = SEL_UDSEG;
   if_.cs = SEL_UCSEG;
   if_.eflags = FLAG_IF | FLAG_MBS;
+
+  /* LP - Calls load with file_name and save_ptr */
   success = load (file_name, &if_.eip, &if_.esp, &save_ptr);
 
   /* If load failed, quit. */
@@ -371,7 +373,7 @@ load (const char *file_name, void (**eip) (void), void **esp, char **save_ptr)
         }
     }
 
-  /* Set up stack. */
+  /* LP - Set up stack with file_name and save_ptr */
   if (!setup_stack (esp, file_name, save_ptr))
     goto done;
 
