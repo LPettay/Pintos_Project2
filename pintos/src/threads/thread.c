@@ -16,9 +16,6 @@
 #include "userprog/process.h"
 #endif
 
-
-static struct thread *thread_get(int pid);
-
 /* Random value for struct thread's `magic' member.
    Used to detect stack overflow.  See the big comment at the top
    of thread.h for details. */
