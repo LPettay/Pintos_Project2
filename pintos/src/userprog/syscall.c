@@ -360,6 +360,9 @@ static struct process_file * get_process_file(int file_descriptor)
       cur_elem != list_end(&cur->file_list);
       cur_elem = list_next(cur_elem))
   {
+	  int what = 0;
+	  printf("SysCall.c -> Get_Process_File Function -> %d", what);
+	  what++;
     /* Get the process file which holds the current element */
     struct process_file *pfile = list_entry(cur_elem, struct process_file, elem);
     if(pfile != NULL && file_descriptor == pfile->file_descriptor)

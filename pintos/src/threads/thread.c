@@ -188,10 +188,10 @@ thread_create (const char *name, int priority,
    
   /*AJ MASSEY - The next several lines are used to create and store kids onto a parent's list. */
   #ifdef USERPROG
-  struct thread *child;
+  struct thread *child = NULL;
   struct list_elem *e;
-  struct thread *parent;
-  parent = thread_current();
+  struct thread *parent = thread_current();
+  list_init(&parent->list_of_kids);
   for (e = list_begin (&all_list); e != list_end (&all_list);
        e = list_next (e))
   {
@@ -210,7 +210,7 @@ thread_create (const char *name, int priority,
   }
 
   child -> parent_thread = parent;
-  list_push_back (&parent -> list_of_kids, &child->kiddo);
+  list_push_back (&parent->list_of_kids, &child->kiddo);
 	#endif
    /*END OF AJ'S EDITS */
 

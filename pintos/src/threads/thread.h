@@ -91,9 +91,10 @@ struct thread
     uint8_t *stack;                     /* Saved stack pointer. */
     int priority;                       /* Priority. */
     struct list_elem allelem;           /* List element for all threads list. */
-    struct list_elem *kiddo;            /* marks the child thread */
+    struct list_elem kiddo;            /* marks the child thread */
     struct thread *parent_thread;       /* marks the Parent thread */
-    struct list *list_of_kids;          /* marks all the rugrats */
+    struct list list_of_kids;          /* marks all the rugrats */
+	struct semaphore *still_alive;		/* A lock for a thread that is still alive */
     struct list file_list;              /*List of files in use by thread */
     int *fd;                            /*The File Directory number for this file */
     int wait_cnt;                       /* Number of threads waiting on our completion */
@@ -110,7 +111,6 @@ struct thread
 #ifdef USERPROG
     /* Owned by userprog/process.c. */
     uint32_t *pagedir;                  /* Page directory. */
-    struct thread *parent;              /* marks the Parent thread */
     bool waiting;                       /* marks whether already waiting on this thread or not */
     struct list_elem child;            /* marks the child thread */
 #endif

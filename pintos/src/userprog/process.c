@@ -15,8 +15,10 @@
 #include "threads/init.h"
 #include "threads/interrupt.h"
 #include "threads/palloc.h"
+#include "threads/malloc.h"
 #include "threads/thread.h"
 #include "threads/vaddr.h"
+#include "threads/synch.h"
 
 static thread_func start_process NO_RETURN;
 static bool load (const char *cmdline, void (**eip) (void), void **esp, char **save_ptr);
@@ -125,37 +127,53 @@ process_wait (tid_t child_tid UNUSED)
    struct thread *parent = thread_current();
    struct thread *child;
    struct list_elem *e;
+   struct semaphore *still_alive;
    
-   for (e = list_begin (parent->list_of_kids); e != list_end (parent->list_of_kids);
+   for (e = list_begin (&parent->list_of_kids); e != list_end (&parent->list_of_kids);
        e = list_next (e))
     {
 	  int what = 0;
 	  printf("Process.c -> Process_Wait Function -> %d", what);
 	  what++;
       child = list_entry (e, struct thread, child);
-      if(child->tid == child_tid) break;
+      if(child->tid == child_tid) 
+	  {
+		  break;
+	  }
+	  else
+	  {
+		child = NULL;
+	  }
     }
-   if (child != NULL)
+   if (child != NULL && child->tid == child_tid && child->waiting)
    {
-      if (child->tid == child_tid)
-      {
-           if (child->waiting)
-           {
-               return -1;  
-           }
-      }
-      else
-      {
-         return -1;
-      }
+        return -1;
    }
    
-   if (child->status != THREAD_DYING || child->exit_status != NULL) 
+   if (child != NULL && child->tid != child_tid)
    {
-      return (int)child->exit_status;
+	   return -1;
+   }
+   
+   if (child->exit_status != NULL) 
+   {
+     return (int)child->exit_status;
    }
    
    int exit_status = -1;
+   
+   still_alive = (struct semaphore *) malloc (sizeof (struct semaphore));
+   sema_init (still_alive, 0);
+   child->still_alive = still_alive;
+   
+   if (child->status != THREAD_DYING)
+   {
+	    sema_down (still_alive);
+		exit_status = (int)child->exit_status;
+		sema_down (still_alive);
+   }
+   
+   free(still_alive);
    return exit_status;
 }
 
